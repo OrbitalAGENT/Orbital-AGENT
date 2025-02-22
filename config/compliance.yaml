@@ -1,0 +1,19 @@
+# config/compliance.yaml
+compliance:
+  policy_engine:
+    evaluation_mode: "realtime"
+    default_action: "deny"
+    rule_update_interval: 600
+
+  blockchain:
+    adapter: "hyperledger"
+    channel: "orbital-channel"
+    chaincode: "compliance_cc"
+    peers:
+      - "peer0.org1.example.com:7051"
+      - "peer1.org1.example.com:8051"
+
+  zkp:
+    curve: "secp384r1"
+    hash_algorithm: "sha3_384"
+    proof_expiry: 3600
