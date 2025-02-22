@@ -36,15 +36,6 @@ O:::::::OOO:::::::O r:::::r            b:::::bbbbbb::::::bi::::::i     t::::::tt
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
 ```                                                                                                                                                                                                                                      
 
-## Table of Contents
-- [Architecture Overview](#architecture-overview)
-- [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
-- [Quick Start](#quick-start)
-- [Configuration](#configuration)
-- [Deployment Options](#deployment-options)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Architecture Overview
 
