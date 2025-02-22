@@ -1,0 +1,19 @@
+# config/base.yaml
+core:
+  cluster_id: "orbital-main"
+  environment: "${ENV}"
+  log_level: "INFO"
+  debug_mode: false
+
+network:
+  api_endpoint: "0.0.0.0:8080"
+  internal_subnet: "10.42.0.0/24"
+  service_discovery: "consul.service.orbital"
+  max_connections: 1000
+
+security:
+  tls:
+    enabled: true
+    cert_path: "/etc/ssl/certs/orbital.pem"
+    key_path: "/etc/ssl/private/orbital.key"
+  secrets_manager: "vault://orbital-secrets"
