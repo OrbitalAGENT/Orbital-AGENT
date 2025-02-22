@@ -1,41 +1,63 @@
-import numpy as np
+# orbital-agent/src/agent_management/swarm_engine.py
+import json
+import logging
 from typing import Dict, List
-from pydantic import BaseModel
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 
-class AgentState(BaseModel):
-    agent_id: str
-    cpu_usage: float
-    memory: float
-    task_capacity: int
+logger = logging.getLogger(__name__)
+
+@dataclass
+class NodeState:
+    capacity: int
+    load: int = 0
+    last_heartbeat: float = 0.0
 
 class SwarmOrchestrator:
-    def __init__(self, max_agents: int = 1000):
-        self.agent_registry: Dict[str, AgentState] = {}
-        self.Q_table = np.zeros((max_agents, 10))  # Q-Learning state matrix
+    def __init__(self, config_file: str):
+        self.nodes: Dict[str, NodeState] = {}
+        self.executor = ThreadPoolExecutor()
+        self.load_topology(config_file)
+        
+    def load_topology(self, config_path: str):
+        """Load node network topology from config"""
+        try:
+            with open(config_path) as f:
+                topology = json.load(f)
+                self.nodes = {n['id']: NodeState(n['capacity']) for n in topology['nodes']}
+            logger.info(f"Loaded swarm topology with {len(self.nodes)} nodes")
+        except Exception as e:
+            logger.error(f"Topology loading failed: {str(e)}")
+            raise
 
-    def register_agent(self, agent: AgentState):
-        """Dynamic agent registration with health checks"""
-        if agent.agent_id not in self.agent_registry:
-            self.agent_registry[agent.agent_id] = agent
-            self._update_q_table(agent.agent_id)
+    def allocate_task(self, task_resources: Dict) -> List[str]:
+        """Distribute task using modified bin packing algorithm"""
+        sorted_nodes = sorted(self.nodes.items(), 
+                            key=lambda x: x[1].capacity - x[1].load,
+                            reverse=True)
+        
+        allocated = []
+        remaining = task_resources['requirements']
+        
+        for node_id, state in sorted_nodes:
+            if state.load + remaining <= state.capacity:
+                state.load += remaining
+                allocated.append(node_id)
+                remaining = 0
+                break
+            elif state.capacity - state.load > 0:
+                allocated.append(node_id)
+                remaining -= (state.capacity - state.load)
+                state.load = state.capacity
+                
+        if remaining > 0:
+            raise RuntimeError("Insufficient swarm resources")
+            
+        return allocated
 
-    def optimize_swarm(self, task_matrix: np.ndarray) -> List[str]:
-        """Q-Learning based swarm optimization"""
-        optimal_agents = []
-        for task in task_matrix:
-            agent_ids = sorted(
-                self.agent_registry.keys(),
-                key=lambda x: self._calculate_fitness(x, task),
-                reverse=True
-            )[:3]  # Select top 3 agents per task
-            optimal_agents.extend(agent_ids)
-        return list(set(optimal_agents))
-
-    def _calculate_fitness(self, agent_id: str, task: np.ndarray) -> float:
-        """Fitness function combining resource metrics and Q-values"""
-        agent = self.agent_registry[agent_id]
-        resource_score = (agent.cpu_usage * 0.3 + 
-                         agent.memory * 0.2 + 
-                         agent.task_capacity * 0.5)
-        q_value = self.Q_table[len(self.agent_registry), task[0]]
-        return resource_score * q_value
+    def release_resources(self, node_ids: List[str]):
+        """Release allocated resources from nodes"""
+        with self.executor.lock:
+            for nid in node_ids:
+                if nid in self.nodes:
+                    self.nodes[nid].load = 0
