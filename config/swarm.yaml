@@ -1,0 +1,12 @@
+# config/swarm.yaml
+swarm:
+  consensus_algorithm: "raft"
+  heartbeat_interval: 5000
+  election_timeout: 10000
+  node_discovery:
+    strategy: "dns"
+    refresh_interval: 30000
+  resource_thresholds:
+    cpu: 0.85
+    memory: 0.90
+    disk: 0.95
