@@ -1,0 +1,23 @@
+# config/monitoring.yaml
+observability:
+  metrics:
+    interval: 15
+    exporters:
+      - type: "prometheus"
+        endpoint: "metrics.orbital:9090"
+      - type: "otlp"
+        endpoint: "otel-collector:4317"
+
+  tracing:
+    sampling_rate: 0.1
+    attributes:
+      environment: "${ENV}"
+      cluster: "orbital-main"
+
+  logging:
+    rotation:
+      size: "100MB"
+      keep: 7
+    remote:
+      endpoint: "logs.orbital:514"
+      protocol: "tcp"
