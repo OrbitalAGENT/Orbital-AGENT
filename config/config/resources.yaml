@@ -1,0 +1,14 @@
+# config/resources.yaml
+resource_management:
+  allocation_strategy: "binpack"
+  oversubscription:
+    cpu: 1.2
+    memory: 1.1
+  default_limits:
+    task:
+      cpu: 2
+      memory: 4096
+      disk: 10240
+    agent:
+      cpu: 0.5
+      memory: 1024
