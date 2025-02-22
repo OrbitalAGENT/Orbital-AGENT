@@ -1,0 +1,14 @@
+# config/eventbus.yaml
+event_system:
+  kafka:
+    bootstrap_servers:
+      - "kafka1:9092"
+      - "kafka2:9092"
+    topics:
+      control_plane: "orbital.control"
+      data_plane: "orbital.data"
+    retention_hours: 168
+
+  fallback:
+    protocol: "nats"
+    servers: "nats://nats1:4222"
